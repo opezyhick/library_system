@@ -7,7 +7,15 @@ const {
   InternalServerError,
 } = require("../config/errors");
 
-router.put("/check-out", async (req, res) => {
+router.get("/get-all", async (req, res) => {
+  try {
+    const data = await checkService.getAllCheckouts(req.userId);
+    res.json(data);
+  } catch (error) {
+    res.status(error.status).json(error.toObject());
+  }
+});
+router.post("/check-out", async (req, res) => {
   try {
     const data = await checkService.checkOutBook(req.userId, req.query);
     res.json(data);

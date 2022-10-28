@@ -12,6 +12,7 @@ const {
 const yup = require("yup");
 const bcryptjs = require("bcryptjs");
 const jwtTokenProvider = require("../config/jwt-token-provider");
+const { Op } = require("sequelize");
 
 const {
   loginValidationSchema,
@@ -20,6 +21,37 @@ const {
 const { UserTypeEnum } = require("../config/constants");
 const { IMAGE_ROOT_DIR } = require("../utility/utils");
 const path = require("path");
+
+exports.filterBook = async function filterBook(queryParams) {
+  try {
+    const { title, genre, book_id } = queryParams;
+    const data = await Book.findAll({
+      where: {
+        [Op.or]: [title, genre, book_id],
+      },
+    });
+    return {
+      data,
+    };
+  } catch (error) {
+    logger.error(error?.message);
+    if (error instanceof yup.ValidationError) {
+      throw new InvalidPayloadError(error.errors[0], {
+        cause: error,
+      });
+    }
+    if (error instanceof UnAuthorizedError) {
+      throw error;
+    }
+    if (error instanceof AuthenticationError) {
+      throw error;
+    }
+    if (error instanceof InvalidPayloadError) {
+      throw error;
+    }
+    throw new InternalServerError(undefined, { cause: error });
+  }
+};
 
 exports.addNewBook = async function addNewBook(adminId, payload) {
   try {

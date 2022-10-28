@@ -10,14 +10,16 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
         primaryKey: true,
       },
+      book_id: { type: DataTypes.STRING },
+      type: {
+        type: DataTypes.ENUM(...Object.values(CheckTypeEnum)),
+      },
       check_in_by: { type: DataTypes.STRING },
       check_in_at: { type: DataTypes.DATE },
 
       check_out_by: { type: DataTypes.STRING },
       check_out_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-      type: {
-        type: DataTypes.ENUM(...Object.values(CheckTypeEnum)),
-      },
+      espected_return_date: { type: DataTypes.DATE },
     },
     { freezeTableName: true, timestamps: false }
   );

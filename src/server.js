@@ -7,6 +7,8 @@ const database = require("./config/database");
 const { auth } = require("./config/middlewares");
 const userRoutes = require("./user/user-route");
 const bookRoutes = require("./book/book-route");
+const checkRoutes = require("./check/check-route");
+
 const { IMAGE_ROOT_DIR } = require("./utility/utils");
 
 const PORT = process.env.PORT || 5001;
@@ -24,6 +26,7 @@ app.use(
 );
 app.use("/user", userRoutes);
 app.use("/book", bookRoutes);
+app.use("/check", checkRoutes);
 
 startApp();
 

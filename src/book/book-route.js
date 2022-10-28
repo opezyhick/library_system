@@ -24,6 +24,14 @@ const multerConfig = {
 };
 const upload = multer(multerConfig);
 
+router.get("/filter", async (req, res) => {
+  try {
+    const data = await bookService.filterBook(req.query);
+    res.json(data);
+  } catch (error) {
+    res.status(error.status).json(error.toObject());
+  }
+});
 router.get("/get-all", async (req, res) => {
   try {
     const data = await bookService.getAllBooks(req.userId);
