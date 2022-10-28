@@ -29,7 +29,7 @@ startApp();
 
 async function startApp() {
   try {
-    await database.sequelize.sync();
+    await database.sequelize.sync({ force: false });
     app.listen(PORT, () => {
       logger.info(`🚀 APP: ${PORT}`);
     });

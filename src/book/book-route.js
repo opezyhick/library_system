@@ -33,7 +33,6 @@ router.get("/get-all", async (req, res) => {
   }
 });
 
-
 router.post("/add-book", (req, res) => {
   multerConfig.storage = coverPageStorage;
   multer(multerConfig).single("cover_page_image")(req, res, async (err) => {
@@ -47,6 +46,29 @@ router.post("/add-book", (req, res) => {
     } else {
       try {
         const data = await bookService.addNewBook(req.userId, {
+          ...req.body,
+          cover_page_image: req.file || req.body.cover_page_image,
+        });
+        res.json(data);
+      } catch (error) {
+        res.status(error.status).json(error.toObject());
+      }
+    }
+  });
+});
+router.put("/update-book", (req, res) => {
+  multerConfig.storage = coverPageStorage;
+  multer(multerConfig).single("cover_page_image")(req, res, async (err) => {
+    if (err) {
+      const internalServerError = new InternalServerError(undefined, {
+        cause: err,
+      });
+      res
+        .status(internalServerError.status)
+        .json(internalServerError.toObject());
+    } else {
+      try {
+        const data = await bookService.updateBook(req.userId, req.query, {
           ...req.body,
           cover_page_image: req.file || req.body.cover_page_image,
         });

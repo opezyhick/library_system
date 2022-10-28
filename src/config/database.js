@@ -14,5 +14,9 @@ db.sequelize = sequelize;
 db.models = {};
 db.models.User = require("../user/user-model")(sequelize, Sequelize.DataTypes);
 db.models.Book = require("../book/book-model")(sequelize, Sequelize.DataTypes);
+db.models.Check = require("../check/check-model")(
+  sequelize,
+  Sequelize.DataTypes
+);
 
 module.exports = db;
