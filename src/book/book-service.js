@@ -12,6 +12,7 @@ const {
 const yup = require("yup");
 const bcryptjs = require("bcryptjs");
 const jwtTokenProvider = require("../config/jwt-token-provider");
+const { Op } = require("sequelize");
 
 const {
   loginValidationSchema,
@@ -20,6 +21,37 @@ const {
 const { UserTypeEnum } = require("../config/constants");
 const { IMAGE_ROOT_DIR } = require("../utility/utils");
 const path = require("path");
+
+exports.filterBook = async function filterBook(queryParams) {
+  try {
+    const { title, genre, book_id } = queryParams;
+    const data = await Book.findAll({
+      where: {
+        [Op.or]: [title, genre, book_id],
+      },
+    });
+    return {
+      data,
+    };
+  } catch (error) {
+    logger.error(error?.message);
+    if (error instanceof yup.ValidationError) {
+      throw new InvalidPayloadError(error.errors[0], {
+        cause: error,
+      });
+    }
+    if (error instanceof UnAuthorizedError) {
+      throw error;
+    }
+    if (error instanceof AuthenticationError) {
+      throw error;
+    }
+    if (error instanceof InvalidPayloadError) {
+      throw error;
+    }
+    throw new InternalServerError(undefined, { cause: error });
+  }
+};
 
 exports.addNewBook = async function addNewBook(adminId, payload) {
   try {
@@ -99,6 +131,58 @@ exports.getAllBooks = async function getAllBooks(adminId) {
       throw error;
     }
     if (error instanceof InvalidPayloadError) {
+      throw error;
+    }
+    throw new InternalServerError(undefined, { cause: error });
+  }
+};
+
+exports.updateBook = async function updateBook(adminId, queryParams, payload) {
+  try {
+    const user = await User.findAll({
+      where: {
+        user_id: adminId,
+      },
+    });
+
+    if (!user[0]) {
+      throw new AuthenticationError("Oops ! !, You cannot access this route");
+    }
+    const isLiberian = user[0].type === UserTypeEnum.LIBRARIAN;
+    if (!isLiberian) throw new UnAuthorizedError("Low ACL ");
+
+    const { cover_page_image } = payload;
+
+    const update = await Book.update(
+      {
+        ...payload,
+        cover_page_image: cover_page_image?.path
+          ? path.relative(IMAGE_ROOT_DIR, cover_page_image?.path)
+          : cover_page_image,
+      },
+      {
+        where: {
+          book_id: queryParams.book_id,
+        },
+      }
+    );
+    console.log(update);
+
+    return { message: `Bood with ${queryParams.book_id} Updated` };
+  } catch (error) {
+    logger.error(error?.message);
+    if (error instanceof yup.ValidationError) {
+      throw new InvalidPayloadError(error.errors[0], {
+        cause: error,
+      });
+    }
+    if (error instanceof InvalidPayloadError) {
+      throw error;
+    }
+    if (error instanceof AuthenticationError) {
+      throw error;
+    }
+    if (error instanceof UnAuthorizedError) {
       throw error;
     }
     throw new InternalServerError(undefined, { cause: error });

@@ -72,4 +72,13 @@ router.put("/upload-photo", (req, res) => {
     }
   });
 });
+
+router.get("/get-all-user-log", async (req, res) => {
+  try {
+    const data = await userService.getAllUserCheckOut(req.userId, req.query);
+    res.json(data);
+  } catch (error) {
+    res.status(error.status).json(error.toObject());
+  }
+});
 module.exports = router;

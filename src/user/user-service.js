@@ -1,5 +1,5 @@
 const {
-  models: { User },
+  models: { User, Check },
 } = require("../config/database");
 const logger = require("../config/logging").getLogger("USER:SERVICE");
 const {
@@ -168,5 +168,46 @@ exports.updateProfilePhoto = async function updateProfilePhoto(
       throw error;
     }
     throw new InternalServerError(undefined, { cause: error });
+  }
+};
+
+exports.getAllUserCheckOut = async function getAllUserCheckOut(
+  adminId,
+  queryParams
+) {
+  try {
+    const user = await User.findOne({
+      where: {
+        user_id: adminId,
+      },
+    });
+
+    if (!user || user === null) {
+      throw new AuthenticationError("Oops ! !, Invalid Bearer Token");
+    }
+    const isLiberian = user.type === UserTypeEnum.LIBRARIAN;
+    if (!isLiberian) throw new UnAuthorizedError("Access not granted");
+
+    const data = await User.findAll({
+      include: [{ model: Check, as: "check" }],
+    });
+
+    return {
+      data,
+    };
+  } catch (error) {
+    logger.error(error?.message);
+    if (error instanceof yup.ValidationError) {
+      throw new InvalidPayloadError(error.errors[0], {
+        cause: error,
+      });
+    }
+    if (error instanceof UnAuthorizedError) {
+      throw error;
+    }
+    if (error instanceof InvalidPayloadError) {
+      throw error;
+    }
+    throw new DatabaseError(undefined, { cause: error });
   }
 };

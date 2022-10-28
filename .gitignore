@@ -1,3 +1,4 @@
 /node_modules
+/asset-directory
 .env.local
 .env
